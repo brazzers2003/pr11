@@ -1,0 +1,50 @@
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FileProcessor {
+    public static void main(String[] args) {
+        String inputFile = "input.txt";
+        String outputFile = "output.txt";
+        String logFile = "log.txt";
+        String resultFile = "analytic.results.txt";
+
+        try (FileInputStream inputStream = new FileInputStream(inputFile);
+             FileOutputStream outputStream = new FileOutputStream(outputFile);
+             BufferedReader logReader = new BufferedReader(new FileReader(logFile));
+             BufferedWriter resultWriter = new BufferedWriter(new FileWriter(resultFile))) {
+
+            // Завдання 1: копіювання файлу та підрахунок символів, слів, рядків
+            int count = 0, words = 0, lines = 0;
+            int b;
+            while ((b = inputStream.read()) != -1) {
+                outputStream.write(b);
+                count++;
+                if (Character.isWhitespace((char) b)) words++;
+                if (b == '\n') lines++;
+            }
+            System.out.printf("Characters: %d, Words: %d, Lines: %d%n", count, words, lines);
+
+            // Завдання 2: аналіз логів
+            Map<String, Integer> successCount = new HashMap<>();
+            Map<String, Integer> totalCount = new HashMap<>();
+            String line;
+            while ((line = logReader.readLine()) != null) {
+                String[] parts = line.split(" ");
+                String user = parts[0];
+                String result = parts[1];
+                totalCount.put(user, totalCount.getOrDefault(user, 0) + 1);
+                if ("SUCCESS".equals(result)) {
+                    successCount.put(user, successCount.getOrDefault(user, 0) + 1);
+                }
+            }
+
+            for (Map.Entry<String, Integer> entry : successCount.entrySet()) {
+                double successRate = (double) entry.getValue() / totalCount.get(entry.getKey()) * 100;
+                resultWriter.write(entry.getKey() + ": " + successRate + "%\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
